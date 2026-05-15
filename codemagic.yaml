@@ -1,0 +1,87 @@
+workflows:
+  android-release:
+    name: EduQuest Android Release
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      android_signing:
+        - eduquest_keystore
+      groups:
+        - google_play
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+
+      - name: Get Flutter packages
+        script: |
+          cd $CM_BUILD_DIR
+          flutter packages pub get
+
+      - name: Flutter analyze
+        script: |
+          cd $CM_BUILD_DIR
+          flutter analyze --no-fatal-infos
+
+      - name: Flutter unit tests
+        script: |
+          cd $CM_BUILD_DIR
+          flutter test
+        ignore_failure: true
+
+      - name: Build APK (Release)
+        script: |
+          cd $CM_BUILD_DIR
+          flutter build apk --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+      - name: Build App Bundle (AAB)
+        script: |
+          cd $CM_BUILD_DIR
+          flutter build appbundle --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  android-debug:
+    name: EduQuest Android Debug
+    max_build_duration: 30
+    environment:
+      flutter: stable
+
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd $CM_BUILD_DIR
+          flutter packages pub get
+
+      - name: Build Debug APK
+        script: |
+          cd $CM_BUILD_DIR
+          flutter build apk --debug
+
+    artifacts:
+      - build/**/outputs/**/*.apk
