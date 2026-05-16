@@ -1,0 +1,152 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# KidzoLand - Codemagic CI/CD
+# NO keystore setup required - uses debug signing by default.
+# For signed release APK, see the "android-release-signed" workflow below.
+# ─────────────────────────────────────────────────────────────────────────────
+workflows:
+
+  # ── WORKFLOW 1: Debug APK (No signing required - works immediately) ────────
+  android-debug:
+    name: KidzoLand Android Debug APK
+    max_build_duration: 45
+    instance_type: mac_mini_m1
+
+    environment:
+      flutter: stable
+      android_signing: []        # ← No keystore needed
+
+    scripts:
+      - name: Print Flutter version
+        script: flutter --version
+
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+          echo "flutter.sdk=$FLUTTER_ROOT" >> "$CM_BUILD_DIR/android/local.properties"
+
+      - name: Get Flutter packages
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter pub get
+
+      - name: Build Debug APK
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter build apk --debug \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  # ── WORKFLOW 2: Release APK (No keystore - signed with debug key) ──────────
+  android-release-unsigned:
+    name: KidzoLand Android Release (Debug-signed)
+    max_build_duration: 45
+    instance_type: mac_mini_m1
+
+    environment:
+      flutter: stable
+      android_signing: []        # ← No keystore needed
+
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+          echo "flutter.sdk=$FLUTTER_ROOT" >> "$CM_BUILD_DIR/android/local.properties"
+
+      - name: Get Flutter packages
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter pub get
+
+      - name: Build Release APK (debug-signed)
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter build apk --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  # ── WORKFLOW 3: Signed Release (Requires keystore env vars) ───────────────
+  # Only use this after you set up environment variables in Codemagic:
+  # CM_KEYSTORE (base64), CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+  android-release-signed:
+    name: KidzoLand Android Signed Release
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+
+    environment:
+      flutter: stable
+      # No android_signing block here - we handle it manually in scripts
+      vars:
+        PACKAGE_NAME: "com.kidzoland.app"
+
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+          echo "flutter.sdk=$FLUTTER_ROOT" >> "$CM_BUILD_DIR/android/local.properties"
+
+      - name: Set up keystore (only if env vars are present)
+        script: |
+          if [ -n "$CM_KEYSTORE" ]; then
+            echo "$CM_KEYSTORE" | base64 --decode > "$CM_BUILD_DIR/android/app/kidzoland.keystore"
+            cat >> "$CM_BUILD_DIR/android/key.properties" << EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=kidzoland.keystore
+          EOF
+          else
+            echo "No keystore provided - using debug signing"
+          fi
+
+      - name: Get Flutter packages
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter pub get
+
+      - name: Build Signed Release APK
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter build apk --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+      - name: Build App Bundle (AAB)
+        script: |
+          cd "$CM_BUILD_DIR"
+          flutter build appbundle --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
