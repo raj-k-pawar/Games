@@ -55,8 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Image.asset('assets/images/icon.png', width: 100, height: 100, errorBuilder: (_, __, ___) => const Text('🎓', style: TextStyle(fontSize: 64)))
                     .animate().scale(duration: 500.ms, curve: Curves.elasticOut),
                 const SizedBox(height: 16),
-                const Text('Welcome to
-Quizzo!',
+                const Text('Welcome to Quizzo!',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1))
                     .animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
