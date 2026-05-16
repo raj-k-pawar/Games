@@ -23,16 +23,16 @@ if (hasKeystore) {
 
 android {
     namespace "com.kidzoland.app"
-    compileSdk flutter.compileSdkVersion
+    compileSdk 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     sourceSets {
@@ -41,8 +41,8 @@ android {
 
     defaultConfig {
         applicationId "com.kidzoland.app"
-        minSdk flutter.minSdkVersion
-        targetSdk flutter.targetSdkVersion
+        minSdk 21
+        targetSdk 35
         versionCode flutter.versionCode
         versionName flutter.versionName
         multiDexEnabled true
@@ -53,10 +53,9 @@ android {
             if (hasKeystore) {
                 keyAlias keystoreProperties["keyAlias"]
                 keyPassword keystoreProperties["keyPassword"]
-                storeFile keystoreProperties["storeFile"] ? file("${keystoreProperties["storeFile"]}") : null
+                storeFile file("${keystoreProperties["storeFile"]}")
                 storePassword keystoreProperties["storePassword"]
             } else {
-                // Fall back to debug signing if no keystore provided
                 keyAlias "androiddebugkey"
                 keyPassword "android"
                 storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")

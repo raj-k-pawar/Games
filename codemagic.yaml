@@ -1,15 +1,15 @@
 # KidzoLand - Codemagic CI/CD
-# No keystore required - uses Flutter's automatic debug signing
+# AGP 8.7.3 + Gradle 8.10.2 + Flutter stable
 workflows:
 
-  # ── WORKFLOW 1: Debug APK (works immediately, no signing setup) ────────────
+  # ── Debug APK (no signing required - works immediately) ───────────────────
   android-debug:
     name: KidzoLand Android Debug APK
-    max_build_duration: 45
+    max_build_duration: 60
     instance_type: mac_mini_m1
 
     environment:
-      flutter: stable
+      flutter: 3.27.4
 
     scripts:
       - name: Set up local.properties
@@ -40,14 +40,14 @@ workflows:
           success: true
           failure: true
 
-  # ── WORKFLOW 2: Release APK (no keystore - auto debug-signed) ─────────────
+  # ── Release APK (no keystore - debug-signed, installable on any device) ───
   android-release-unsigned:
     name: KidzoLand Android Release APK
-    max_build_duration: 45
+    max_build_duration: 60
     instance_type: mac_mini_m1
 
     environment:
-      flutter: stable
+      flutter: 3.27.4
 
     scripts:
       - name: Set up local.properties
@@ -78,9 +78,9 @@ workflows:
           success: true
           failure: true
 
-  # ── WORKFLOW 3: Signed Release (only if you add keystore env vars) ─────────
-  # In Codemagic App Settings → Environment variables, add:
-  #   CM_KEYSTORE        = base64 of your .keystore file
+  # ── Signed Release (add keystore env vars in Codemagic App Settings) ──────
+  # Environment variables needed:
+  #   CM_KEYSTORE        = base64-encoded .keystore file
   #   CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
   android-release-signed:
     name: KidzoLand Android Signed Release
@@ -88,7 +88,7 @@ workflows:
     instance_type: mac_mini_m1
 
     environment:
-      flutter: stable
+      flutter: 3.27.4
       android_signing:
         - kidzoland_keystore
 
@@ -100,7 +100,7 @@ workflows:
 
       - name: Set up key.properties
         script: |
-          cat >> "$CM_BUILD_DIR/android/key.properties" << EOF
+          cat > "$CM_BUILD_DIR/android/key.properties" << EOF
           storePassword=$CM_KEYSTORE_PASSWORD
           keyPassword=$CM_KEY_PASSWORD
           keyAlias=$CM_KEY_ALIAS
