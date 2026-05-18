@@ -1,154 +1,109 @@
-# 🎓 Quizzo — Gamified Educational App
+# 🎓 Quizzo — Learn, Play, Win!
 
-Flutter educational gaming app for kids 5–15 years.
+A complete Flutter educational gaming app for children aged 5–15.
 
 ---
 
-## ✅ BUILD ON CODEMAGIC (Step-by-Step)
-
-### Step 1 — Push to GitHub
+## 🚀 Build on Codemagic (3 steps)
 
 ```bash
-cd quizzo
-git init
-git add .
-git commit -m "Quizzo initial commit"
-git branch -M main
+# 1. Push to GitHub
+git init && git add . && git commit -m "Quizzo v2.0"
 git remote add origin https://github.com/YOUR_USERNAME/quizzo.git
 git push -u origin main
-```
 
-### Step 2 — Connect to Codemagic
+# 2. codemagic.io → Add App → GitHub → quizzo
+#    Config: "Use codemagic.yaml"
+#    Workflow: "android-debug" ← Start here (no signing needed)
 
-1. Go to **https://codemagic.io** → Sign up / Sign in
-2. Click **"Add application"**
-3. Select **GitHub** → Authorize → Pick your `quizzo` repo
-4. When asked project type → Choose **"Flutter App"**
-5. When asked config → Choose **"Use codemagic.yaml"** ✅
-
-### Step 3 — Start Build (No keystore needed!)
-
-1. Click **"Start new build"**
-2. Select branch: **main**
-3. Select workflow: **`android-debug`** ← Start with this one
-4. Click **Start**
-5. Wait 10–15 minutes
-
-### Step 4 — Download APK
-
-1. Build finishes → Click **"Artifacts"** tab
-2. Download `app-debug.apk`
-3. Send to Android phone → Install (enable Unknown Sources)
-
----
-
-## 📁 Project Structure
-
-```
-quizzo/
-├── codemagic.yaml              ← CI/CD config (3 workflows)
-├── pubspec.yaml                ← Dependencies
-├── analysis_options.yaml       ← Lint config
-├── android/
-│   ├── app/
-│   │   ├── build.gradle        ← App build config
-│   │   ├── src/main/
-│   │   │   ├── AndroidManifest.xml
-│   │   │   ├── kotlin/com/quizzo/app/MainActivity.kt
-│   │   │   └── res/
-│   │   │       ├── drawable/launch_background.xml
-│   │   │       └── values/{colors,styles}.xml
-│   ├── build.gradle            ← Root build config
-│   ├── settings.gradle         ← Plugin management
-│   ├── gradle.properties
-│   └── gradle/wrapper/gradle-wrapper.properties
-└── lib/
-    ├── main.dart               ← Entry point + routing
-    ├── theme/app_theme.dart    ← Colors, gradients, decorations
-    ├── models/
-    │   ├── user_model.dart
-    │   └── question_model.dart
-    ├── providers/
-    │   ├── user_provider.dart
-    │   └── game_provider.dart
-    ├── services/
-    │   ├── subject_data.dart
-    │   └── question_bank.dart
-    └── screens/
-        ├── splash_screen.dart
-        ├── login_screen.dart
-        ├── home_screen.dart
-        ├── game_select_screen.dart
-        ├── game_screen.dart
-        ├── result_screen.dart
-        ├── shop_screen.dart
-        └── parent_dashboard_screen.dart
+# 3. Download app-debug.apk from Artifacts tab
 ```
 
 ---
 
-## 🔑 3 Workflows Explained
+## 📱 App Architecture
 
-| Workflow | Signing | Use For |
-|---|---|---|
-| `android-debug` | Debug key (auto) | ✅ Quick test — works immediately, no setup |
-| `android-release-unsigned` | Debug key (auto) | ✅ Release-mode build, no keystore needed |
-| `android-release-signed` | Your keystore | 🔒 Google Play submission |
+### Screens (15 screens)
+| Screen | Description |
+|--------|-------------|
+| Splash | Animated logo + loading |
+| Onboarding | Role selection (Child / Parent) + avatar creation |
+| Child Home | Dashboard, Leaderboard, Profile tabs |
+| Game Select | Choose difficulty (Easy/Medium/Hard) + 10/25/50 questions |
+| Game Play | Timer, lifelines (Skip/50:50/+15s), answer feedback, explanations |
+| Result | Stars, confetti, rewards breakdown, performance bars |
+| Shop | Avatars (12), Pets (8), Power-ups (8) with coin/gem purchases |
+| Parent Login | Separate PIN-protected entry — completely separate from child UI |
+| Parent Dashboard | Progress tracking, screen time controls, safety settings |
+| Challenge/Battle | 1v1 battles, friend search by Quizzo ID |
+| Leaderboard | Global rankings |
 
----
-
-## 🔑 For Google Play (Signed Release)
-
-Only needed if you want to publish to Google Play.
-
-### 1. Generate keystore locally
-```bash
-keytool -genkey -v \
-  -keystore quizzo.keystore \
-  -alias quizzo \
-  -keyalg RSA -keysize 2048 \
-  -validity 10000
-```
-
-### 2. Base64-encode it
-```bash
-# macOS / Linux:
-base64 -i quizzo.keystore | pbcopy
-
-# Windows PowerShell:
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("quizzo.keystore")) | clip
-```
-
-### 3. Add to Codemagic Environment Variables
-In Codemagic → App → Environment variables → Add:
-- `CM_KEYSTORE` = (paste base64 string)
-- `CM_KEYSTORE_PASSWORD` = your keystore password
-- `CM_KEY_ALIAS` = quizzo
-- `CM_KEY_PASSWORD` = your key password
-
-### 4. Use `android-release-signed` workflow
-
----
-
-## 🏃 Run Locally
-
-```bash
-flutter pub get
-flutter run                         # debug on device
-flutter build apk --debug           # debug APK
-flutter build apk --release         # release APK (uses debug signing)
-```
+### Data Persistence
+- All child + parent data stored locally via SharedPreferences
+- Session management (child session / parent session)
+- No-repeat question tracking across games
 
 ---
 
 ## 🎮 Features
 
+### Child Features
 - 8 subjects: Math, Science, History, Logic, Coding, Geography, English, Finance
-- 50+ questions at 3 difficulty levels
-- Timer + 3 lifelines (Skip, 50:50, +15 sec)
-- Coins, XP, Gems, Level, Streaks
-- Confetti result screen with stars
-- Avatar shop + pet shop + power-ups
-- Parent dashboard (PIN-locked, screen time, progress)
-- Leaderboard (simulated)
-- Persistent storage via SharedPreferences
+- 225 unique questions across 3 difficulty levels (Grade 5–10)
+- 25 questions per game (configurable: 10/25/50)
+- Timer per question (25/30/35 sec by difficulty)
+- 3 lifelines: Skip ⏭️, 50:50 🎯, +15sec ⏱️
+- Smooth slide animation between questions
+- No question repeats within a session
+- XP → Level up system
+- Daily streak tracking 🔥
+- Coins + Gems currency
+- 12 unlockable avatars
+- 8 collectible pets with bonuses
+- 8 power-up types
+- 6 earnable badges
+- Unique Quizzo ID for friend challenges
+- Battle Arena with subject selection
+
+### Parent Features (Completely Separate Login)
+- PIN-protected parent account
+- Per-child settings (screen time, bedtime lock, difficulty, safe mode)
+- Subject performance tracking
+- Weekly usage charts
+- Enable/disable: multiplayer, leaderboard, safe mode
+- Age group configuration (5-7 / 8-12 / 13-15)
+- Weekly report toggle
+
+---
+
+## 🏗️ Tech Stack
+- **Flutter 3.27.4** (stable)
+- **Provider** — state management
+- **flutter_animate** — smooth animations
+- **confetti** — celebration effects
+- **percent_indicator** — XP/timer bars
+- **shared_preferences** — local persistence
+
+---
+
+## 📦 Project Structure
+```
+quizzo/
+├── lib/
+│   ├── main.dart                    ← App entry + 11 routes
+│   ├── theme/app_theme.dart         ← Colors, gradients, decorations
+│   ├── models/models.dart           ← All data models
+│   ├── providers/
+│   │   ├── app_provider.dart        ← Child + Parent state
+│   │   └── game_provider.dart       ← Game state + no-repeat logic
+│   ├── services/
+│   │   ├── data_service.dart        ← Subjects, shop items, avatar map
+│   │   └── question_service.dart   ← 225 questions for grades 5–10
+│   └── screens/ (15 screens)
+├── assets/images/icon.png           ← Your Quizzo logo
+├── android/                         ← Android config
+│   ├── app/build.gradle             ← AGP 8.7.3, NDK 27, Java 17
+│   ├── settings.gradle              ← pluginManagement DSL
+│   └── gradle/wrapper/              ← Gradle 8.10.2
+└── codemagic.yaml                   ← Debug + Release workflows
+```
